@@ -119,6 +119,7 @@ active_env/
 *.swo
 
 # Project specific uploads and local database files
-uploads/
+uploads/attendance/
+uploads/profiles/
 *.db
 *.sqlite
