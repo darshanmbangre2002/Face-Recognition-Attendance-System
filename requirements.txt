@@ -12,3 +12,4 @@ mediapipe>=0.10.35
 onnxruntime>=1.27.0
 insightface>=1.0.1
 onnx>=1.22.0
+gunicorn>=23.0.0
