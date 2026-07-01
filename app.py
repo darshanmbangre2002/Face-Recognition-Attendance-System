@@ -848,6 +848,10 @@ def report_employee():
         
     return jsonify({'success': True, 'records': records})
 
+@app.route("/health")
+def health():
+    return {"status": "ok"}, 200
+
 # Start application server
 if __name__ == '__main__':
     # Clean folders check
