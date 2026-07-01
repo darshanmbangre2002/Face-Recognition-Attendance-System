@@ -1,0 +1,14 @@
+Flask==3.1.2
+flask-cors==6.0.2
+PyMySQL==1.1.1
+python-dotenv==1.2.1
+PyJWT==2.10.1
+opencv-python==4.13.0.92
+numpy==2.4.4
+pillow==12.2.0
+reportlab==4.5.1
+cryptography==48.0.0
+mediapipe>=0.10.35
+onnxruntime>=1.27.0
+insightface>=1.0.1
+onnx>=1.22.0

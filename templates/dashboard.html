@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance Portal</title>
+    <!-- Boxicons CDN -->
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <!-- 1. LOGIN OVERLAY PANEL -->
+    <div id="login-overlay" class="login-container">
+        <div class="glass-panel login-card">
+            <div class="login-header">
+                <i class="bx bx-face"></i>
+                <h2>Face Recognition</h2>
+                <p>Attendance Management System</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Administrator Username</label>
+                    <input type="text" id="username" class="form-input" placeholder="e.g. admin" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 10px;">
+                    Access Dashboard <i class="bx bx-log-in-circle"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. MAIN APPLICATION CONTAINER -->
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="glass-panel sidebar">
+            <div class="brand">
+                <i class="bx bx-scan brand-icon"></i>
+                <span class="brand-name">AuraFace HR</span>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="nav-item active" data-view="dashboard">
+                    <a href="#"><i class="bx bxs-dashboard"></i> Overview</a>
+                </li>
+                <li class="nav-item" data-view="employees">
+                    <a href="#"><i class="bx bxs-user-detail"></i> Employees</a>
+                </li>
+                <li class="nav-item" data-view="enroll">
+                    <a href="#"><i class="bx bxs-camera-movie"></i> Face Registration</a>
+                </li>
+                <li class="nav-item" data-view="verify">
+                    <a href="#"><i class="bx bx-aperture"></i> Live Verification</a>
+                </li>
+                <li class="nav-item" data-view="reports">
+                    <a href="#"><i class="bx bxs-report"></i> Reports Center</a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="profile-summary">
+                    <div class="profile-avatar">AD</div>
+                    <div class="profile-info">
+                        <h4 id="user-display-name">Administrator</h4>
+                        <p id="user-display-role">System Admin</p>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">
+                    Disconnect <i class="bx bx-log-out-circle"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            
+            <!-- Top Dashboard Header -->
+            <div class="glass-panel top-header">
+                <div>
+                    <h1 id="view-title">Overview Dashboard</h1>
+                    <p id="view-subtitle">Real-time attendance insights and telemetry</p>
+                </div>
+                <div class="header-actions">
+                    <div class="system-status">
+                        <div class="status-dot"></div>
+                        <span>API Server Live</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: OVERVIEW DASHBOARD VIEW -->
+            <div id="dashboard-view" class="view-panel active">
+                <div class="stats-grid">
+                    <div class="glass-panel stat-card blue">
+                        <div class="stat-content">
+                            <p>Total Employees</p>
+                            <h3 id="stat-total-employees">0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bx bxs-group"></i></div>
+                    </div>
+                    <div class="glass-panel stat-card green">
+                        <div class="stat-content">
+                            <p>Checked In Today</p>
+                            <h3 id="stat-active-today">0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bx bxs-user-check"></i></div>
+                    </div>
+                    <div class="glass-panel stat-card yellow">
+                        <div class="stat-content">
+                            <p>Late Arrivals</p>
+                            <h3 id="stat-late-today">0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bx bxs-watch"></i></div>
+                    </div>
+                    <div class="glass-panel stat-card red">
+                        <div class="stat-content">
+                            <p>Absent Count</p>
+                            <h3 id="stat-absent-today">0</h3>
+                        </div>
+                        <div class="stat-icon"><i class="bx bxs-user-x"></i></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-layout">
+                    <!-- Chart Panel -->
+                    <div class="glass-panel chart-card">
+                        <div class="card-header">
+                            <h2>Weekly Attendance Stream</h2>
+                        </div>
+                        <div style="position: relative; height: 260px; width: 100%;">
+                            <canvas id="attendance-weekly-chart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Live Logs Stream -->
+                    <div class="glass-panel recent-logs-card">
+                        <div class="card-header">
+                            <h2>Live Verification Events</h2>
+                            <button class="btn-link" onclick="switchView('verify')">Open Hub</button>
+                        </div>
+                        <div class="live-feed-list" id="dashboard-feed-list">
+                            <!-- Injected dynamically -->
+                            <div class="feed-item" style="border: none; justify-content: center; color: var(--text-muted); padding-top: 50px;">
+                                No transactions logged today.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: EMPLOYEE MANAGER VIEW -->
+            <div id="employees-view" class="view-panel">
+                <div class="glass-panel table-card">
+                    <div class="table-toolbar">
+                        <div class="search-input-wrapper">
+                            <i class="bx bx-search"></i>
+                            <input type="text" class="search-input" id="employee-search" oninput="filterEmployees()" placeholder="Search by name, department, designation...">
+                        </div>
+                        <button class="btn-primary" onclick="openEmployeeModal()"><i class="bx bx-user-plus"></i> Register Employee</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Employee Name</th>
+                                    <th>Department</th>
+                                    <th>Designation</th>
+                                    <th>Email</th>
+                                    <th>Mobile</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employee-table-body">
+                                <!-- Injected dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: FACE ENROLLMENT VIEW -->
+            <div id="enroll-view" class="view-panel">
+                <div class="glass-panel table-card">
+                    <div class="camera-view-container">
+                        <div>
+                            <div class="card-header" style="margin-bottom: 12px;">
+                                <h2>Capture Enrollment Target</h2>
+                            </div>
+                            <div class="camera-panel" id="enroll-camera-panel">
+                                <video id="enroll-video" class="camera-feed" autoplay playsinline muted></video>
+                                <div class="scanner-overlay">
+                                    <div class="face-guideline"></div>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="btn-secondary" id="btn-enroll-camera-toggle" onclick="toggleEnrollCamera()">
+                                    <i class="bx bx-video"></i> Start Camera
+                                </button>
+                                <button class="btn-primary" id="btn-enroll-capture" onclick="triggerEnrollment()" disabled>
+                                    <i class="bx bx-scan"></i> Capture Face Embeddings
+                                </button>
+                            </div>
+                            
+                            <div class="enroll-instruction-text" id="enroll-guide-prompt" style="text-align: center; margin-top: 15px; font-weight: 600; color: var(--accent); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);">
+                                Standby. Select employee and start camera to begin.
+                            </div>
+                            
+                            <div class="capture-progress">
+                                <div class="progress-bar" id="enroll-progress-bar"></div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <div class="glass-card" style="padding: 20px;">
+                                <h3 style="font-size: 14px; margin-bottom: 12px; font-weight: 600; color: #fff;">1. Select Enrolling Employee</h3>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <select id="enroll-employee-select" class="form-input" style="background: rgba(0,0,0,0.2);" onchange="updateEnrollmentStatus()">
+                                        <option value="">-- Choose Employee --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="glass-card" style="padding: 20px; flex-grow: 1;">
+                                <h3 style="font-size: 14px; margin-bottom: 15px; font-weight: 600; color: #fff;">2. Enrollment Guidelines</h3>
+                                <ul style="color: var(--text-secondary); font-size: 12px; padding-left: 20px; line-height: 1.8;">
+                                    <li>Align your face within the dotted circle guidelines.</li>
+                                    <li>Ensure background lighting is balanced and faces are clear.</li>
+                                    <li>The system captures multi-angle face profiles automatically.</li>
+                                    <li>Avoid glasses, hats, or masks during the registration phase.</li>
+                                    <li>Maintain a neutral expression, then blink/smile gently.</li>
+                                </ul>
+                                
+                                <div id="enrollment-status-box" style="margin-top: 25px; padding: 15px; border-radius: 10px; background: rgba(255,255,255,0.02); display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-color);">
+                                    <i class="bx bx-info-circle" style="font-size: 24px; color: var(--accent);"></i>
+                                    <div>
+                                        <h5 style="font-size: 13px; color: #fff;">Enrolled Status</h5>
+                                        <p id="enrollment-status-text" style="font-size: 11px; color: var(--text-secondary);">Select an employee to verify their registration.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: LIVE VERIFICATION VIEW -->
+            <div id="verify-view" class="view-panel">
+                <div class="glass-panel table-card">
+                    <div class="verification-grid">
+                        
+                        <!-- Camera Feed -->
+                        <div>
+                            <div class="card-header" style="margin-bottom: 12px;">
+                                <h2>Live Camera Feed</h2>
+                                <div class="badge success" id="verification-camera-status">Offline</div>
+                            </div>
+                            <div class="camera-panel" id="verify-camera-panel">
+                                <video id="verify-video" class="camera-feed" autoplay playsinline muted></video>
+                                <div class="scanner-overlay">
+                                    <div class="face-guideline"></div>
+                                </div>
+                            </div>
+                            <div class="camera-controls">
+                                <button class="btn-secondary" id="btn-verify-camera-toggle" onclick="toggleVerifyCamera()">
+                                    <i class="bx bx-video"></i> Start Verification
+                                </button>
+                                <div class="btn-secondary" style="gap: 8px; cursor: default;">
+                                    <input type="checkbox" id="verify-auto-attendance" checked style="cursor: pointer;">
+                                    <label for="verify-auto-attendance" style="font-size: 12px; cursor: pointer; color: #fff; font-weight: 500;">Auto Check-In</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recognition Output Panel -->
+                        <div class="glass-card verification-status-panel" id="verify-status-card">
+                            <div class="verify-badge-icon">
+                                <i class="bx bx-aperture"></i>
+                            </div>
+                            <h3 class="verify-title" id="verify-header">Verification Standby</h3>
+                            <p class="verify-desc" id="verify-description">Click "Start Verification" to initiate live scanning. Position your face in front of the camera.</p>
+                            
+                            <div class="verify-details-table" id="verify-details-table" style="display: none;">
+                                <div class="verify-detail-row">
+                                    <span>Employee Name:</span>
+                                    <span id="verify-emp-name">-</span>
+                                </div>
+                                <div class="verify-detail-row">
+                                    <span>Department:</span>
+                                    <span id="verify-emp-dept">-</span>
+                                </div>
+                                <div class="verify-detail-row">
+                                    <span>Designation:</span>
+                                    <span id="verify-emp-desg">-</span>
+                                </div>
+                                <div class="verify-detail-row">
+                                    <span>Match Quality:</span>
+                                    <span id="verify-emp-confidence">-</span>
+                                </div>
+                                <div class="verify-detail-row">
+                                    <span>Time Stamp:</span>
+                                    <span id="verify-emp-time">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: REPORTS CENTER VIEW -->
+            <div id="reports-view" class="view-panel">
+                <div class="glass-panel table-card" style="margin-bottom: 20px;">
+                    <div class="card-header" style="margin-bottom: 15px;">
+                        <h2>Reports Filter Engine</h2>
+                    </div>
+                    <div class="table-toolbar" style="margin-bottom: 0;">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap; flex-grow: 1;">
+                            <div class="form-group" style="margin-bottom: 0; min-width: 150px;">
+                                <label for="report-filter-type" style="margin-bottom: 4px;">Report Type</label>
+                                <select id="report-filter-type" class="form-input" onchange="toggleReportFilters()">
+                                    <option value="daily">Daily Attendance</option>
+                                    <option value="monthly">Monthly Attendance</option>
+                                    <option value="late">Late Arrival Audit</option>
+                                    <option value="employee">Individual History</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="filter-date-group" style="margin-bottom: 0;">
+                                <label for="report-filter-date" style="margin-bottom: 4px;">Date</label>
+                                <input type="date" id="report-filter-date" class="form-input">
+                            </div>
+                            <div class="form-group" id="filter-month-group" style="margin-bottom: 0; display: none;">
+                                <label for="report-filter-month" style="margin-bottom: 4px;">Month</label>
+                                <input type="month" id="report-filter-month" class="form-input">
+                            </div>
+                            <div class="form-group" id="filter-employee-group" style="margin-bottom: 0; display: none; min-width: 180px;">
+                                <label for="report-filter-employee" style="margin-bottom: 4px;">Select Employee</label>
+                                <select id="report-filter-employee" class="form-input">
+                                    <option value="">-- All --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-self: flex-end;">
+                            <button class="btn-primary" onclick="queryReports()"><i class="bx bx-filter-alt"></i> Filter Data</button>
+                            <button class="btn-secondary" onclick="exportReport('csv')"><i class="bx bx-file"></i> CSV</button>
+                            <button class="btn-secondary" onclick="exportReport('pdf')"><i class="bx bxs-file-pdf"></i> PDF</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel table-card">
+                    <div class="table-responsive">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>ID</th>
+                                    <th>Employee Name</th>
+                                    <th>Department</th>
+                                    <th>Check In</th>
+                                    <th>Status</th>
+                                    <th>Confidence</th>
+                                    <th>Device ID</th>
+                                    <th>Check-in photo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-table-body">
+                                <tr>
+                                    <td colspan="9" style="text-align: center; color: var(--text-secondary); padding: 40px 0;">
+                                        Select filters above and click "Filter Data" to load report.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- 3. EMPLOYEE DETAILS / ADD MODAL -->
+    <div id="employee-modal" class="modal-backdrop">
+        <div class="glass-panel modal-content">
+            <div class="card-header" style="margin-bottom: 20px;">
+                <h2 id="employee-modal-title">Register New Employee</h2>
+                <button class="btn-link" onclick="closeEmployeeModal()" style="font-size: 20px;"><i class="bx bx-x"></i></button>
+            </div>
+            <form id="employee-form" onsubmit="saveEmployee(event)">
+                <input type="hidden" id="modal-employee-id">
+                
+                <div class="form-group">
+                    <label for="modal-employee-name">Full Employee Name *</label>
+                    <input type="text" id="modal-employee-name" class="form-input" placeholder="e.g. John Doe" required>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="modal-department">Department</label>
+                        <input type="text" id="modal-department" class="form-input" placeholder="e.g. Technology">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-designation">Designation</label>
+                        <input type="text" id="modal-designation" class="form-input" placeholder="e.g. Software Engineer">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label for="modal-email">Email Address</label>
+                        <input type="email" id="modal-email" class="form-input" placeholder="e.g. john@company.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-mobile">Mobile Number</label>
+                        <input type="tel" id="modal-mobile" class="form-input" placeholder="e.g. +61 400 000 000">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-status">Employment Status</label>
+                    <select id="modal-status" class="form-input">
+                        <option value="1">Active</option>
+                        <option value="0">Suspended / Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeEmployeeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" id="btn-save-employee">Create Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. TOAST NOTIFICATION CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Custom App Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
