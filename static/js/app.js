@@ -926,9 +926,9 @@ async function triggerVerificationCheck() {
                 speak("Attendance captured successfully!");
                 showToast("Attendance captured successfully!", "success");
                 
-                // Show blocking browser popup
+                // Show custom premium popup
                 setTimeout(() => {
-                    alert(`Attendance captured successfully for ${emp.employee_name}!`);
+                    showCustomAlert(`Attendance captured successfully for ${emp.employee_name}!`, 'success');
                 }, 100);
             } else {
                 // Duplicate check-in / duplicate warning details
@@ -1246,3 +1246,53 @@ function exportReport(exportType) {
     // Redirect to download via token parameter inside requests URL query
     window.open(`${API_URL}${path}?${params}`, '_blank');
 }
+
+// -------------------------------------------------------------
+// PREMIUM CUSTOM ALERT FUNCTIONS
+// -------------------------------------------------------------
+window.showCustomAlert = function(message, type = 'info', title = null) {
+    const modal = document.getElementById('custom-alert-modal');
+    if (!modal) return;
+    
+    const content = modal.querySelector('.alert-modal-content');
+    const iconContainer = document.getElementById('alert-modal-icon-container');
+    const titleEl = document.getElementById('alert-modal-title');
+    const messageEl = document.getElementById('alert-modal-message');
+    
+    // Set icon & colors based on type
+    let iconHTML = '';
+    let defaultTitle = 'Notification';
+    if (type === 'success') {
+        iconHTML = '<i class="bx bx-check-circle" style="color: #10b981; filter: drop-shadow(0 0 10px rgba(16,185,129,0.3));"></i>';
+        defaultTitle = 'Success';
+    } else if (type === 'error') {
+        iconHTML = '<i class="bx bx-error" style="color: #ef4444; filter: drop-shadow(0 0 10px rgba(239,68,68,0.3));"></i>';
+        defaultTitle = 'Error';
+    } else if (type === 'warning') {
+        iconHTML = '<i class="bx bx-info-circle" style="color: #f59e0b; filter: drop-shadow(0 0 10px rgba(245,158,11,0.3));"></i>';
+        defaultTitle = 'Warning';
+    } else {
+        iconHTML = '<i class="bx bx-bell" style="color: #6366f1; filter: drop-shadow(0 0 10px rgba(99,102,241,0.3));"></i>';
+        defaultTitle = 'Information';
+    }
+    
+    if (iconContainer) iconContainer.innerHTML = iconHTML;
+    if (titleEl) titleEl.textContent = title || defaultTitle;
+    if (messageEl) messageEl.textContent = message;
+    
+    modal.style.display = 'flex';
+    setTimeout(() => {
+        if (content) content.style.transform = 'scale(1)';
+    }, 10);
+};
+
+window.closeCustomAlert = function() {
+    const modal = document.getElementById('custom-alert-modal');
+    if (!modal) return;
+    
+    const content = modal.querySelector('.alert-modal-content');
+    if (content) content.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 150);
+};
