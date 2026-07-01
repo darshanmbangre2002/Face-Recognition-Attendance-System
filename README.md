@@ -173,6 +173,29 @@ Saves one of the facial training poses to the employee's dataset.
 
 ---
 
+### 3. Edit/Overwrite Face Data
+Re-registers or edits the face embeddings for an existing employee. Removes any old face models for this ID.
+*   **URL**: `/api/enroll-face`
+*   **Method**: `PUT`
+*   **Headers**: `Authorization: Bearer <jwt_token>`
+*   **Request JSON**:
+    ```json
+    {
+        "employee_id": 1,
+        "image": "data:image/jpeg;base64,/9j/4AA..." // Base64 data URI
+    }
+    ```
+*   **Response JSON (200 OK)**:
+    ```json
+    {
+        "success": true,
+        "message": "Face credentials successfully updated (overwritten) for Darshan M Bangre.",
+        "face_box": [192, 161, 148, 195]
+    }
+    ```
+
+---
+
 ### 3. Face Verification
 Matches a camera frame against registered face coordinates using Cosine Similarity (Dot Product).
 *   **URL**: `/api/verify-face`

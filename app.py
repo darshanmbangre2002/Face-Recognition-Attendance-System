@@ -286,6 +286,63 @@ def enroll_face():
         'face_box': boxes[0]
     })
 
+@app.route('/api/enroll-face', methods=['PUT'])
+@token_required
+def update_enroll_face():
+    """
+    Overwrites the existing face data for an employee (re-registration/edit).
+    """
+    emp_id = request.form.get('employee_id')
+    if not emp_id:
+        data = request.get_json(silent=True)
+        if data:
+            emp_id = data.get('employee_id')
+            
+    if not emp_id:
+        return jsonify({'success': False, 'message': 'employee_id is required'}), 400
+        
+    img_np = get_image_from_request()
+    if img_np is None:
+        return jsonify({'success': False, 'message': 'Valid image file or base64 stream required'}), 400
+        
+    emp = Database.execute_query("SELECT employee_name FROM employees WHERE employee_id = %s", (emp_id,), fetch_one=True)
+    if not emp:
+        return jsonify({'success': False, 'message': 'Employee not found'}), 404
+        
+    boxes = FaceEngine.detect_faces(img_np)
+    if not boxes:
+        return jsonify({'success': False, 'message': 'No face detected in the image. Please try again with better lighting.'}), 400
+    if len(boxes) > 1:
+        return jsonify({'success': False, 'message': 'Multiple faces detected. Please make sure only one face is in the frame.'}), 400
+        
+    embeddings = FaceEngine.get_embeddings(img_np, boxes)
+    if not embeddings or len(embeddings) == 0:
+        return jsonify({'success': False, 'message': 'Could not extract clean facial features.'}), 400
+        
+    # Overwrite: Delete all existing face records for this employee
+    Database.execute_query("DELETE FROM face_embeddings WHERE employee_id = %s", (emp_id,), commit=True)
+    
+    # Save image for audit reference
+    filename = f"emp_{emp_id}_{int(datetime.now().timestamp())}.jpg"
+    filepath = os.path.join(Config.UPLOAD_FOLDER_PROFILES, filename)
+    cv2.imwrite(filepath, img_np)
+    
+    # Store embedding
+    embedding_str = json.dumps(embeddings[0])
+    query = """
+    INSERT INTO face_embeddings (employee_id, embedding, model_version, created_date)
+    VALUES (%s, %s, %s, %s)
+    """
+    params = (emp_id, embedding_str, 'v1', datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    Database.execute_query(query, params, commit=True)
+    
+    return jsonify({
+        'success': True,
+        'message': f"Face credentials successfully updated (overwritten) for {emp['employee_name']}.",
+        'face_box': boxes[0]
+    })
+
+
 @app.route('/api/verify-face', methods=['POST'])
 def verify_face():
     """

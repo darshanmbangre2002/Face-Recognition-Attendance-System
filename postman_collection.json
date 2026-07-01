@@ -358,6 +358,44 @@
 					"response": []
 				},
 				{
+					"name": "Edit Face (JSON base64)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"employee_id\": 1,\n    \"image\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/enroll-face",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"enroll-face"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Verify Face (JSON base64)",
 					"request": {
 						"method": "POST",
