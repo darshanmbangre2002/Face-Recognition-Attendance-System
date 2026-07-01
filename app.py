@@ -341,15 +341,30 @@ def verify_face():
         
     # Fetch employee details
     emp = Database.execute_query(
-        "SELECT employee_id, employee_name, department, designation, email FROM employees WHERE employee_id = %s", 
+        "SELECT employee_id, employee_name, department, designation, email, status FROM employees WHERE employee_id = %s", 
         (emp_id,), 
         fetch_one=True
     )
     
+    if not emp:
+        return jsonify({'success': False, 'message': 'Employee not found'}), 200
+        
+    if emp.get('status') == 0:
+        return jsonify({
+            'success': False,
+            'message': f"Verification blocked. {emp['employee_name']} is currently Inactive or Suspended."
+        }), 200
+        
     return jsonify({
         'success': True,
         'message': 'Face recognized successfully!',
-        'employee': emp,
+        'employee': {
+            'employee_id': emp['employee_id'],
+            'employee_name': emp['employee_name'],
+            'department': emp['department'],
+            'designation': emp['designation'],
+            'email': emp['email']
+        },
         'confidence_score': confidence
     })
 
@@ -411,9 +426,15 @@ def attendance_checkin():
     now_time_str = datetime.now().strftime("%H:%M:%S")
     
     # 1. Fetch Employee
-    emp = Database.execute_query("SELECT employee_name, email FROM employees WHERE employee_id = %s", (emp_id,), fetch_one=True)
+    emp = Database.execute_query("SELECT employee_name, email, status FROM employees WHERE employee_id = %s", (emp_id,), fetch_one=True)
     if not emp:
         return jsonify({'success': False, 'message': 'Employee not found'}), 404
+        
+    if emp.get('status') == 0:
+        return jsonify({
+            'success': False,
+            'message': f"Check-in blocked. {emp['employee_name']}'s status is Inactive or Suspended."
+        }), 403
         
     # 2. Prevent Duplicate Attendance Check-in
     existing = Database.execute_query(
