@@ -28,6 +28,9 @@ class Config:
     # Face recognition matching threshold (similarity). Higher is stricter, lower is looser.
     FACE_MATCH_THRESHOLD = float(os.environ.get('FACE_MATCH_THRESHOLD', 0.45))
     
+    # InsightFace model name. Defaults to 'buffalo_sc' for low-memory cloud hosting environments (like Render).
+    INSIGHTFACE_MODEL = os.environ.get('INSIGHTFACE_MODEL', 'buffalo_sc')
+    
     # Mail Config (Optional)
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
     MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))

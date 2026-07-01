@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import json
 import urllib.request
+from config import Config
 
 # Try to import insightface
 try:
@@ -39,11 +40,12 @@ class FaceEngine:
         
         # 1. Try to load InsightFace
         if cls._has_insightface and FaceAnalysis is not None:
-            print("[FaceEngine] Initializing InsightFace Buffalo_L model pack...")
+            model_name = Config.INSIGHTFACE_MODEL
+            print(f"[FaceEngine] Initializing InsightFace {model_name} model pack...")
             try:
-                cls.insightface_app = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
+                cls.insightface_app = FaceAnalysis(name=model_name, providers=['CPUExecutionProvider'])
                 cls.insightface_app.prepare(ctx_id=0, det_size=(640, 640))
-                print("[FaceEngine] InsightFace Buffalo_L initialized successfully.")
+                print(f"[FaceEngine] InsightFace {model_name} initialized successfully.")
                 return # Successfully loaded primary backend!
             except Exception as e:
                 print(f"[FaceEngine] Error loading InsightFace: {e}. Falling back to legacy engines.")

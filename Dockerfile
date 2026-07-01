@@ -22,7 +22,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Pre-cache InsightFace model pack during the Docker build stage to enable instant startup on Render
-RUN python -c "from insightface.app import FaceAnalysis; app = FaceAnalysis(name='buffalo_l'); app.prepare(ctx_id=-1)"
+RUN python -c "from insightface.app import FaceAnalysis; app = FaceAnalysis(name='buffalo_sc'); app.prepare(ctx_id=-1)"
 
 # Copy application files
 COPY . .
