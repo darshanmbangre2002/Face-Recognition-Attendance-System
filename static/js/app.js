@@ -660,6 +660,27 @@ async function updateEnrollmentStatus() {
     }
 }
 
+function getCameraErrorMessage(e) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        return 'Camera access requires a secure connection (HTTPS) or localhost. Please check your browser address bar URL.';
+    }
+    if (e) {
+        if (e.name === 'NotAllowedError' || e.name === 'PermissionDeniedError') {
+            return 'Camera permission denied. Please click the site/lock icon in your address bar and set Camera to Allow.';
+        }
+        if (e.name === 'NotFoundError' || e.name === 'DevicesNotFoundError') {
+            return 'No camera hardware detected. Please connect a webcam and verify device manager recognition.';
+        }
+        if (e.name === 'NotReadableError' || e.name === 'TrackStartError') {
+            return 'Camera is already in use by another browser tab or meeting application.';
+        }
+        if (e.name === 'OverconstrainedError') {
+            return 'The requested camera resolution is not supported by your hardware device.';
+        }
+    }
+    return 'Unable to access web camera. Grant permissions and verify device connections.';
+}
+
 async function toggleEnrollCamera() {
     const video = document.getElementById('enroll-video');
     const btn = document.getElementById('btn-enroll-camera-toggle');
@@ -685,7 +706,7 @@ async function toggleEnrollCamera() {
                 capBtn.disabled = false;
             }
         } catch (e) {
-            showToast('Unable to open web camera. Grant permissions and verify device connections.', 'error');
+            showToast(getCameraErrorMessage(e), 'error');
         }
     }
 }
@@ -847,7 +868,7 @@ async function toggleVerifyCamera() {
             // Start verification capture loop using setTimeout instead of setInterval to avoid overlapping ticks
             verifyIntervalId = setTimeout(triggerVerificationCheck, 2500);
         } catch (e) {
-            showToast('Unable to open web camera. Grant permissions and verify device connections.', 'error');
+            showToast(getCameraErrorMessage(e), 'error');
         }
     }
 }
