@@ -89,11 +89,37 @@ async function handleLogin(event) {
     }
 }
 
-function handleLogout() {
+async function handleLogout() {
+    try {
+        if (jwtToken) {
+            await fetch(`${API_URL}/api/logout`, {
+                method: 'POST',
+                headers: { 
+                    'Authorization': `Bearer ${jwtToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Backend logout failed: ", e);
+    }
+    
+    // Clear tokens
     localStorage.removeItem('auraface_token');
     jwtToken = null;
+    
+    // Reset sidebar profile summary info
+    const nameEl = document.getElementById('user-display-name');
+    const roleEl = document.getElementById('user-display-role');
+    if (nameEl) nameEl.textContent = 'Administrator';
+    if (roleEl) roleEl.textContent = 'System Admin';
+    
     showToast('Logged out successfully.', 'success');
-    checkAuth();
+    
+    // Reload page to clear all internal memory cache, employee tables, and telemetry charts
+    setTimeout(() => {
+        window.location.reload();
+    }, 800);
 }
 
 // -------------------------------------------------------------
